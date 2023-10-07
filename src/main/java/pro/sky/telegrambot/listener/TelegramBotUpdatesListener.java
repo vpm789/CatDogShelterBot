@@ -43,15 +43,17 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         updates.forEach(update -> {
                     logger.info("Processing update: {}", update);
 
-                    if (update.message() != null && update.message().text().equals("/start")) {
+                    if (update.message().text().equals("/start")) {
                             this.startCommandReact(update);
-                    } else if (update.callbackQuery() != null) {
+                    } else if (update.message().text().equals("Приют для кошек") || update.message().text().equals("Приют для собак")) {
                         if (update.callbackQuery().data().equals("Приют для кошек")) {
                             logger.info("update.callbackQuery().data().equals({})", update.callbackQuery().data());
                             this.catShelterReact(update);
-                        } else if (update.callbackQuery().data().equals("Приют для собак")){
+                        } else if (update.callbackQuery().data().equals("Приют для собак")) {
                             logger.info("update.callbackQuery().data().equals({})", update.callbackQuery().data());
                         }
+                    } else {
+                        this.unknownCommandReact(update);
                     }
 //            this.getUserData(update);
 
@@ -63,6 +65,15 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
 }
+
+    private void unknownCommandReact(Update update) {
+        Long chatId = update.message().chat().id();
+        this.chatId = chatId;
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup("/start").resizeKeyboard(true);
+
+        SendMessage message = new SendMessage(chatId, "Пожалуйста нажмите кнопку старт");
+        telegramBot.execute(message.replyMarkup(keyboardMarkup));
+    }
 
     private void catShelterReact(Update update) {
         logger.info("catShelterReact Запущен");
